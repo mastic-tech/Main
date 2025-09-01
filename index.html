@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pixshop</title>
+    <link rel="manifest" href="/manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^18.2.0/",
+    "react": "https://esm.sh/react@^18.2.0",
+    "react-dom/": "https://esm.sh/react-dom@^18.2.0/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.10.0",
+    "react-image-crop": "https://esm.sh/react-image-crop@^11.0.6",
+    "exifreader": "https://esm.sh/exifreader@^4.23.0"
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lobster&family=Playfair+Display&family=Merriweather&family=Lato&family=Montserrat&family=Open+Sans&family=Pacifico&family=Dancing+Script&family=Oswald&family=Raleway&family=Source+Code+Pro&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://esm.sh/react-image-crop@^11.0.6/dist/ReactCrop.css" />
+<style>
+/* 
+  Neo-Futuristic iPhone Theme with Glassmorphism
+*/
+:root {
+  --font-sans: 'Inter', sans-serif;
+  
+  /* Light Theme (Neo-Futuristic Rainbow) */
+  --bg-light: #f0f2f5;
+  --text-main-light: #1c1c1e;
+  --text-subtle-light: #636366;
+  --panel-bg-light: rgba(255, 255, 255, 0.6);
+  --panel-border-light: rgba(255, 255, 255, 0.8);
+  --input-bg-light: rgba(220, 220, 225, 0.5);
+  --input-border-light: rgba(200, 200, 205, 0.7);
+  --btn-primary-from-light: #FFD60A;
+  --btn-primary-to-light: #FFC300;
+  --btn-primary-text-light: #000;
+  --btn-secondary-bg-light: rgba(255, 255, 255, 0.4);
+  --btn-secondary-hover-light: rgba(255, 255, 255, 0.7);
+  --btn-secondary-text-light: #3c3c3f;
+  
+  /* Dark Theme */
+  --bg-dark: #090A0F;
+  --text-main-dark: #f5f5f7;
+  --text-subtle-dark: #8e8e93;
+  --panel-bg-dark: rgba(28, 28, 30, 0.7);
+  --panel-border-dark: rgba(72, 72, 74, 0.8);
+  --input-bg-dark: rgba(44, 44, 46, 0.8);
+  --input-border-dark: rgba(72, 72, 74, 0.9);
+  --btn-primary-from-dark: #FFD60A;
+  --btn-primary-to-dark: #FFC300;
+  --btn-primary-text-dark: #000;
+  --btn-secondary-bg-dark: rgba(44, 44, 46, 0.6);
+  --btn-secondary-hover-dark: rgba(58, 58, 60, 0.8);
+  --btn-secondary-text-dark: #ebebf5;
+}
+
+body {
+    font-family: var(--font-sans);
+    transition: background 0.5s ease-in-out;
+    color: var(--text-main-light);
+    background-color: var(--bg-light);
+    background-image: linear-gradient(45deg, #ffdde1, #ee9ca7, #a2d2ff, #bde0fe, #fbc2eb, #a6c1ee);
+    background-size: 400% 400%;
+    animation: rainbow-gradient 25s ease-in-out infinite;
+}
+
+html.dark body {
+    color: var(--text-main-dark);
+    background-color: var(--bg-dark);
+    background-image: 
+        radial-gradient(ellipse at 20% 80%, rgba(150, 50, 200, 0.2) 0%, transparent 100%),
+        radial-gradient(ellipse at 80% 10%, rgba(50, 150, 200, 0.2) 0%, transparent 100%),
+        radial-gradient(ellipse at 90% 90%, rgba(200, 50, 100, 0.2) 0%, transparent 100%);
+    background-size: cover;
+    animation: subtle-pulse 15s ease-in-out infinite, star-field 100s linear infinite;
+}
+
+@keyframes rainbow-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes subtle-pulse {
+  0% { background-color: #090A0F; }
+  50% { background-color: #0c0d13; }
+  100% { background-color: #090A0F; }
+}
+
+/* Base App Styling */
+.text-main { color: var(--text-main-light); }
+html.dark .text-main { color: var(--text-main-dark); }
+
+.text-subtle { color: var(--text-subtle-light); }
+html.dark .text-subtle { color: var(--text-subtle-dark); }
+
+.bg-panel { 
+    background-color: var(--panel-bg-light);
+    border-color: var(--panel-border-light);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+html.dark .bg-panel { 
+    background-color: var(--panel-bg-dark);
+    border-color: var(--panel-border-dark);
+}
+
+.bg-input {
+    background-color: var(--input-bg-light);
+    border-color: var(--input-border-light);
+}
+html.dark .bg-input {
+    background-color: var(--input-bg-dark);
+    border-color: var(--input-border-dark);
+}
+
+.btn-primary {
+    background-image: linear-gradient(to right, var(--btn-primary-from-light), var(--btn-primary-to-light));
+    color: var(--btn-primary-text-light);
+}
+html.dark .btn-primary {
+    background-image: linear-gradient(to right, var(--btn-primary-from-dark), var(--btn-primary-to-dark));
+    color: var(--btn-primary-text-dark);
+}
+
+.btn-secondary {
+    background-color: var(--btn-secondary-bg-light);
+    color: var(--btn-secondary-text-light);
+    border: 1px solid transparent;
+}
+.btn-secondary:hover {
+    background-color: var(--btn-secondary-hover-light);
+}
+html.dark .btn-secondary {
+    background-color: var(--btn-secondary-bg-dark);
+    color: var(--btn-secondary-text-dark);
+}
+html.dark .btn-secondary:hover {
+    background-color: var(--btn-secondary-hover-dark);
+}
+
+
+/* iPhone style theme toggle */
+.theme-switch-wrapper {
+  display: flex;
+  align-items: center;
+}
+.theme-switch {
+  display: inline-block;
+  height: 34px;
+  position: relative;
+  width: 58px;
+}
+.theme-switch input {
+  display:none;
+}
+.slider {
+  background-color: #39393D;
+  bottom: 0;
+  cursor: pointer;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: .4s;
+}
+.slider:before {
+  background-color: #fff;
+  bottom: 3px;
+  content: "";
+  height: 28px;
+  width: 28px;
+  left: 3px;
+  position: absolute;
+  transition: .4s;
+  box-shadow: 0 0 1px rgba(0,0,0,.25);
+}
+input:checked + .slider {
+  background-color: #FFD60A;
+}
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+.slider.round {
+  border-radius: 34px;
+}
+.slider.round:before {
+  border-radius: 50%;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+}
+
+.ReactCrop__crop-selection {
+  border-image-source: none !important;
+  border-color: rgba(255, 214, 10, 0.8) !important;
+}
+
+/* Splash Screen Styles */
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-dark);
+  z-index: 9999;
+  animation: splash-fade-out 0.5s ease-in forwards 4.5s;
+}
+
+.splash-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    animation: content-fade-in 1s ease-out forwards;
+}
+
+.splash-logo {
+    width: 100px;
+    height: 100px;
+    color: var(--btn-primary-from-dark);
+    animation: logo-pulse 2s ease-in-out infinite 1s;
+    filter: drop-shadow(0 0 15px var(--btn-primary-to-dark));
+}
+
+.splash-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    color: var(--text-main-dark);
+}
+
+@keyframes splash-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; pointer-events: none; }
+}
+
+@keyframes content-fade-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes logo-pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 15px var(--btn-primary-to-dark));
+  }
+  50% {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 25px var(--btn-primary-to-dark));
+  }
+}
+
+/* 3D Description Card Styles */
+.perspective-container {
+  perspective: 1000px;
+}
+
+.description-3d-card {
+  transform-style: preserve-3d;
+  transform: rotateX(10deg) rotateY(-5deg);
+  transition: transform 0.5s ease-out;
+  background-color: var(--panel-bg-light);
+  border: 1px solid var(--panel-border-light);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  box-shadow: 
+    0 4px 10px rgba(0,0,0,0.05),
+    0 0 20px rgba(255, 195, 0, 0.1);
+}
+
+html.dark .description-3d-card {
+  background-color: var(--panel-bg-dark);
+  border: 1px solid var(--panel-border-dark);
+  box-shadow: 
+    0 8px 25px rgba(0,0,0,0.2),
+    0 0 30px rgba(255, 195, 0, 0.2);
+}
+
+.perspective-container:hover .description-3d-card {
+  transform: rotateX(0deg) rotateY(0deg) scale(1.03);
+  box-shadow: 
+    0 15px 35px rgba(0,0,0,0.1),
+    0 0 40px rgba(255, 195, 0, 0.3);
+}
+
+html.dark .perspective-container:hover .description-3d-card {
+    box-shadow: 
+    0 20px 50px rgba(0,0,0,0.3),
+    0 0 50px rgba(255, 195, 0, 0.4);
+}
+</style>
+  </head>
+  <body>
+    <script>
+      // Prevents flash of incorrect theme by reading from localStorage before app loads.
+      (function() {
+        try {
+          const theme = localStorage.getItem('theme');
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+          } else {
+            // Ensure dark class is removed if theme is light or not set
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (_) {}
+      })();
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

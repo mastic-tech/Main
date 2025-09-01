@@ -1,0 +1,21 @@
+{
+  "short_name": "Pixshop",
+  "name": "Pixshop - AI Photo Editor",
+  "description": "A powerful, AI photo editor. Retouch, apply creative filters, change backgrounds, use color splash, and make professional adjustments to your images using simple text prompts.",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#090A0F",
+  "background_color": "#090A0F"
+}
