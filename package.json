@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "AI Photo Editor. Retouch, apply creative filters, change backgrounds, use color splash, and make professional adjustments to your images using simple text prompts.",
   "scripts": {
-    "build": "mkdir -p dist && cp -R components services index.html index.tsx App.tsx assets.ts sw.js manifest.json metadata.json types.ts index.css firebase.json dist/"
+    "build": "mkdir -p dist && cp index.html sw.js manifest.json dist/ && esbuild index.tsx --bundle --outfile=dist/index.js --format=esm --jsx=automatic --external:react --external:react-dom/client --external:react-image-crop --external:exifreader"
   },
   "dependencies": {
-    "@google/genai": "^1.10.0"
+    "@google/genai": "^0.12.0",
+    "esbuild": "^0.20.2"
   }
 }

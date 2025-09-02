@@ -32,7 +32,6 @@ const urlsToCache = [
   'https://esm.sh/react@^18.2.0',
   'https://esm.sh/react@^18.2.0/jsx-runtime',
   'https://esm.sh/react-dom@^18.2.0/client',
-  'https://esm.sh/@google/genai@^1.10.0',
   'https://esm.sh/react-image-crop@^11.0.6',
   'https://esm.sh/react-image-crop@^11.0.6/dist/ReactCrop.css',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lobster&family=Playfair+Display&family=Merriweather&family=Lato&family=Montserrat&family=Open+Sans&family=Pacifico&family=Dancing+Script&family=Oswald&family=Raleway&family=Source+Code+Pro&display=swap',
