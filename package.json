@@ -2,6 +2,9 @@
   "name": "pixshop",
   "version": "1.0.0",
   "description": "AI Photo Editor. Retouch, apply creative filters, change backgrounds, use color splash, and make professional adjustments to your images using simple text prompts.",
+  "scripts": {
+    "build": "mkdir -p dist && cp -R components services index.html index.tsx App.tsx assets.ts sw.js manifest.json metadata.json types.ts index.css firebase.json dist/"
+  },
   "dependencies": {
     "@google/genai": "^1.10.0"
   }
