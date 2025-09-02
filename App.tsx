@@ -218,7 +218,7 @@ const App: React.FC = () => {
   const [highlighterBrushMode, setHighlighterBrushMode] = useState<'add' | 'erase'>('add');
   const [highlighterBrushSize, setHighlighterBrushSize] = useState<number>(40);
   const [brushPreview, setBrushPreview] = useState<{ x: number, y: number, visible: boolean } | null>(null);
-
+  
   const imgRef = useRef<HTMLImageElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const panStart = useRef({ x: 0, y: 0 });
@@ -265,7 +265,7 @@ const App: React.FC = () => {
     }, 5000); // 5 seconds
     return () => clearTimeout(timer);
   }, []);
-
+  
   // Effect to synchronize React theme state with the DOM on initial load.
   // The initial class on <html> is set by the inline script in index.html.
   useEffect(() => {
@@ -373,6 +373,22 @@ const App: React.FC = () => {
 
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
+  
+  const performAiAction = useCallback(async (action: () => Promise<any>, options: { context?: string } = {}) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+        await action();
+    } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+        const contextMessage = options.context ? `Failed to ${options.context}.` : 'An error occurred.';
+        setError(`${contextMessage} ${errorMessage}`);
+        console.error(err);
+    } finally {
+        setIsLoading(false);
+    }
+  }, []);
+
 
   const addImageToHistory = useCallback((newImageFile: File) => {
     const newHistory = history.slice(0, historyIndex + 1);
@@ -391,34 +407,23 @@ const App: React.FC = () => {
       setError('No image loaded to edit.');
       return;
     }
-    
     if (!prompt.trim()) {
         setError('Please enter a description for your edit.');
         return;
     }
-
     if (!editHotspot) {
         setError('Please click on the image to select an area to edit.');
         return;
     }
 
-    setIsLoading(true);
-    setError(null);
-    
-    try {
+    await performAiAction(async () => {
         const editedImageUrl = await generateEditedImage(currentImage, prompt, editHotspot);
         const newImageFile = dataURLtoFile(editedImageUrl, `edited-${Date.now()}.png`);
         addImageToHistory(newImageFile);
         setEditHotspot(null);
         setDisplayHotspot(null);
-    } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-        setError(`Failed to generate the image. ${errorMessage}`);
-        console.error(err);
-    } finally {
-        setIsLoading(false);
-    }
-  }, [currentImage, prompt, editHotspot, addImageToHistory]);
+    }, { context: 'generate the image' });
+  }, [currentImage, prompt, editHotspot, addImageToHistory, performAiAction]);
   
   const handleApplyFilter = useCallback(async (filterPrompt: string) => {
     if (!currentImage) {
@@ -426,21 +431,12 @@ const App: React.FC = () => {
       return;
     }
     
-    setIsLoading(true);
-    setError(null);
-    
-    try {
+    await performAiAction(async () => {
         const filteredImageUrl = await generateFilteredImage(currentImage, filterPrompt);
         const newImageFile = dataURLtoFile(filteredImageUrl, `filtered-${Date.now()}.png`);
         addImageToHistory(newImageFile);
-    } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-        setError(`Failed to apply the filter. ${errorMessage}`);
-        console.error(err);
-    } finally {
-        setIsLoading(false);
-    }
-  }, [currentImage, addImageToHistory]);
+    }, { context: 'apply the filter' });
+  }, [currentImage, addImageToHistory, performAiAction]);
   
   const handleApplyAdjustment = useCallback(async (adjustmentPrompt: string) => {
     if (!currentImage) {
@@ -448,21 +444,12 @@ const App: React.FC = () => {
       return;
     }
     
-    setIsLoading(true);
-    setError(null);
-    
-    try {
+    await performAiAction(async () => {
         const adjustedImageUrl = await generateAdjustedImage(currentImage, adjustmentPrompt);
         const newImageFile = dataURLtoFile(adjustedImageUrl, `adjusted-${Date.now()}.png`);
         addImageToHistory(newImageFile);
-    } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-        setError(`Failed to apply the adjustment. ${errorMessage}`);
-        console.error(err);
-    } finally {
-        setIsLoading(false);
-    }
-  }, [currentImage, addImageToHistory]);
+    }, { context: 'apply the adjustment' });
+  }, [currentImage, addImageToHistory, performAiAction]);
   
   const handleAutoEnhance = useCallback(async () => {
     if (!currentImage) {
@@ -470,21 +457,12 @@ const App: React.FC = () => {
       return;
     }
     
-    setIsLoading(true);
-    setError(null);
-    
-    try {
+    await performAiAction(async () => {
         const enhancedImageUrl = await generateAutoEnhancedImage(currentImage);
         const newImageFile = dataURLtoFile(enhancedImageUrl, `enhanced-${Date.now()}.png`);
         addImageToHistory(newImageFile);
-    } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-        setError(`Failed to auto-enhance the image. ${errorMessage}`);
-        console.error(err);
-    } finally {
-        setIsLoading(false);
-    }
-  }, [currentImage, addImageToHistory]);
+    }, { context: 'auto-enhance the image' });
+  }, [currentImage, addImageToHistory, performAiAction]);
 
   const handleApplyCrop = useCallback(() => {
     if (!completedCrop || !imgRef.current) {
@@ -536,23 +514,14 @@ const App: React.FC = () => {
       return;
     }
     
-    setIsLoading(true);
-    setError(null);
-    
-    try {
+    await performAiAction(async () => {
         const collageDataUrl = await generateCollage(collageImages, collageLayout);
         const newImageFile = dataURLtoFile(collageDataUrl, `collage-${Date.now()}.png`);
         addImageToHistory(newImageFile);
         setActiveTab('retouch'); // Switch to edit the new collage
         setCollageImages([]); // Clear collage images after creation
-    } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-        setError(`Failed to create the collage. ${errorMessage}`);
-        console.error(err);
-    } finally {
-        setIsLoading(false);
-    }
-  }, [collageImages, collageLayout, addImageToHistory]);
+    }, { context: 'create the collage' });
+  }, [collageImages, collageLayout, addImageToHistory, performAiAction]);
 
   const handleCreateCutout = useCallback(async (prompt?: string) => {
     if (!currentImage) {
@@ -560,21 +529,12 @@ const App: React.FC = () => {
       return;
     }
     
-    setIsLoading(true);
-    setError(null);
-    
-    try {
+    await performAiAction(async () => {
         const cutoutImageUrl = await createCutout(currentImage, { subjectPrompt: prompt });
         const newImageFile = dataURLtoFile(cutoutImageUrl, `cutout-${Date.now()}.png`);
         addImageToHistory(newImageFile);
-    } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-        setError(`Failed to create the cutout. ${errorMessage}`);
-        console.error(err);
-    } finally {
-        setIsLoading(false);
-    }
-  }, [currentImage, addImageToHistory]);
+    }, { context: 'create the cutout' });
+  }, [currentImage, addImageToHistory, performAiAction]);
   
   const handleApplyManualEdit = useCallback(async (edit: ManualEdit) => {
     if (!currentImage) {
@@ -582,10 +542,7 @@ const App: React.FC = () => {
         return;
     }
 
-    setIsLoading(true);
-    setError(null);
-
-    try {
+    await performAiAction(async () => {
         let newImageUrl: string;
         if (edit.type === 'background') {
             newImageUrl = await changeBackgroundImage(currentImage, edit.payload);
@@ -597,14 +554,8 @@ const App: React.FC = () => {
         
         const newImageFile = dataURLtoFile(newImageUrl, `edited-${Date.now()}.png`);
         addImageToHistory(newImageFile);
-    } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-        setError(`Failed to apply the edit. ${errorMessage}`);
-        console.error(err);
-    } finally {
-        setIsLoading(false);
-    }
-  }, [currentImage, addImageToHistory]);
+    }, { context: 'apply the edit' });
+  }, [currentImage, addImageToHistory, performAiAction]);
   
   const handleApplyText = useCallback(async (options: TextOptions) => {
     if (!currentImage) {
@@ -612,21 +563,12 @@ const App: React.FC = () => {
         return;
     }
 
-    setIsLoading(true);
-    setError(null);
-
-    try {
+    await performAiAction(async () => {
         const newImageUrl = await applyTextToImage(currentImage, options);
         const newImageFile = dataURLtoFile(newImageUrl, `text-${Date.now()}.png`);
         addImageToHistory(newImageFile);
-    } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-        setError(`Failed to apply the text. ${errorMessage}`);
-        console.error(err);
-    } finally {
-        setIsLoading(false);
-    }
-  }, [currentImage, addImageToHistory]);
+    }, { context: 'apply the text' });
+  }, [currentImage, addImageToHistory, performAiAction]);
 
   const handleCollageImagesUpload = (files: FileList | null) => {
     if (files) {
@@ -888,7 +830,8 @@ const App: React.FC = () => {
   
   const handlePrevStep = useCallback(() => {
     if (tutorialStepIndex > 0) {
-        setTutorialStepIndex(prev => prev + 1);
+        // FIX: Corrected tutorial step logic to decrement instead of increment.
+        setTutorialStepIndex(prev => prev - 1);
     }
   }, [tutorialStepIndex]);
 
@@ -964,9 +907,8 @@ const App: React.FC = () => {
           setError('Please highlight an area on the image to create a cutout.');
           return;
       }
-      setIsLoading(true);
-      setError(null);
-      try {
+      
+      await performAiAction(async () => {
           const finalMask = await scaleCanvasToImage(highlighterMask, imgRef.current);
           if (!finalMask) throw new Error("Could not process the highlight mask.");
 
@@ -974,14 +916,8 @@ const App: React.FC = () => {
           const newImageFile = dataURLtoFile(cutoutImageUrl, `cutout-highlighted-${Date.now()}.png`);
           addImageToHistory(newImageFile);
           handleClearHighlight();
-      } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-          setError(`Failed to create cutout from highlight. ${errorMessage}`);
-          console.error(err);
-      } finally {
-          setIsLoading(false);
-      }
-  }, [currentImage, highlighterMask, addImageToHistory, handleClearHighlight, scaleCanvasToImage]);
+      }, { context: 'create cutout from highlight' });
+  }, [currentImage, highlighterMask, addImageToHistory, handleClearHighlight, scaleCanvasToImage, performAiAction]);
 
   const getPointOnCanvas = (e: React.MouseEvent | React.TouchEvent) => {
       if (!maskCanvasRef.current) return null;
