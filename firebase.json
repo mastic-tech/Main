@@ -1,6 +1,5 @@
 {
   "hosting": {
-    "public": "dist",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -9,7 +8,10 @@
     "rewrites": [
       {
         "source": "**",
-        "destination": "/index.html"
+        "run": {
+          "serviceId": "pixshop1",
+          "region": "us-central1"
+        }
       }
     ]
   }
